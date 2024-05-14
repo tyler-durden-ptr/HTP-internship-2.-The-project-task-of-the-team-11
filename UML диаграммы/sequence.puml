@@ -1,0 +1,62 @@
+
+
+
+@startuml
+
+' Барков Игорь
+
+actor main
+participant FileReader
+participant Worker
+participant Queue
+participant message
+
+
+main -> FileReader ++ : readMessages()
+
+FileReader --> main -- : messagesSerialized
+    
+par thread Sender
+
+    main -> Worker ++ : start job thread Sender
+
+    loop Пока не отправили в очередь все сообщения
+
+       Worker -> message ++ : deserialize()
+       message -> message : deserializeMessage()
+       message -> Worker -- : message
+
+       Worker -> Queue ++ : send(message)
+       Queue -> Queue : push(message)
+    else Все сообщения отправлены
+
+       Queue --> Worker -- : emtpy file
+    end
+
+    Worker --> main -- : final job thread Sender
+
+else thread Reciever
+
+    main -> Worker ++ : start job thread Sender
+    loop Пока очередь не пуста
+
+        Worker -> Queue ++ : receive()
+        Queue -> Queue : pop()
+        Queue --> Worker -- : message 
+
+        Worker -> message ++ : serialize()
+        message -> message : serializeMessage()
+        message -> Worker -- : messagesSerialized
+
+        
+    
+    end
+
+    Worker --> main -- : final job thread Reciever
+    
+end
+
+main -> main : verifyMessageTestingModule()
+main -> main : pass/fail
+
+@enduml

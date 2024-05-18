@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "cstring": "cpp",
-        "ostream": "cpp",
-        "constr_type.h": "c",
-        "der_encoder.h": "c",
-        "ber_decoder.h": "c"
-    }
-}

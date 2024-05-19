@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(GTest CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
-file(GLOB TEST_SRC test/*.cpp)
-add_executable(tests ${TEST_SRC}
-        tests/test.cpp)
+file(GLOB TEST_SRC tests/*.cpp)
+file(GLOB ENTITY_SRC src/entity/*.cpp)
+add_executable(tests ${TEST_SRC} ${ENTITY_SRC})
 
-target_include_directories(tests PRIVATE src test)
+target_include_directories(tests PRIVATE src test itti_structs/asn1c_build)
 
 if(MSVC)
     target_compile_options(tests PRIVATE /W4 /permissive-)
@@ -62,3 +62,4 @@ endif()
 
 target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 target_link_libraries(tests PRIVATE rapidjson)
+target_link_libraries(tests PRIVATE itti_structs/asn1c_build)

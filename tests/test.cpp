@@ -5,7 +5,17 @@
 
 #include <string>
 
+#include <entity/UeBlindRequestWrapper.h>
+
 namespace rapid = rapidjson;
+
+template <typename T>
+concept serializableConcept = requires(T t, rapidjson::Document& config, const rapidjson::Document constConfig) {
+   { t.serialize(config) } -> std::same_as<void>;
+    { t.deserialize(constConfig) } -> std::same_as<void>;
+};
+
+static_assert(serializableConcept<UeBlindRequestWrapper>);
 
 TEST(example, example) {
     // 1. Parse a JSON string into DOM.

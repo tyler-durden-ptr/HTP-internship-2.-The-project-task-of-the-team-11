@@ -103,7 +103,7 @@ typedef int(asn_struct_print_f)(
     asn_app_consume_bytes_f *callback, void *app_key);
 
 /*
- * Compare two entity between each other.
+ * Compare two structs between each other.
  * Returns <0 if struct_A is "smaller" than struct_B, >0 if "greater",
  * and =0 if "equal to", for some type-specific, stable definition of
  * "smaller", "greater" and "equal to".

@@ -4,8 +4,8 @@
 
 #include "../../itti_structs/types.hpp"
 
-class UeBlindRequestWrapper : vran::rrc_cu::lte::UeBlindRequest {
+struct UeBlindRequestWrapper : vran::rrc_cu::lte::UeBlindRequest {
 public:
-    void serialize(rapidjson::Document& config);
+    void serialize(rapidjson::Document& config) const;
     void deserialize(const rapidjson::Document& config);
 };

@@ -62,4 +62,3 @@ endif()
 
 target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 target_link_libraries(tests PRIVATE rapidjson)
-target_link_libraries(tests PRIVATE itti_structs/asn1c_build)

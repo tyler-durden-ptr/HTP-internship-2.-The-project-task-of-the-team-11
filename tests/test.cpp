@@ -36,8 +36,21 @@ TEST(UeBlindRequest, example_serialize) {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     d.Accept(writer);
-    ASSERT_EQ(std::string(buffer.GetString(), buffer.GetLength()),
-        R"({"UeBlindRequest":{"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}}})");
+    ASSERT_EQ(R"({"UeBlindRequest":{"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}}})",
+        std::string(buffer.GetString(), buffer.GetLength()));
+}
+
+TEST(UeBlindRequest, example_deserialize) {
+  std::string_view input = R"({"UeBlindRequest":{"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}}})";
+  rapidjson::Document doc;
+  doc.Parse(input.data());
+  UeBlindRequestWrapper result;
+  result.deserialize(doc);
+  ASSERT_EQ(24, result.target_cell_id);
+  ASSERT_EQ(MeasConfig__speedStatePars_PR_release, result.measConfig->speedStatePars->present);
+  ASSERT_EQ(100, result.measConfig->speedStatePars->choice.release);
+  ASSERT_EQ(MeasConfig__measScaleFactor_r12_PR_release, result.measConfig->measScaleFactor_r12->present);
+  ASSERT_EQ(101, result.measConfig->measScaleFactor_r12->choice.release);
 }
 
 TEST(rapidjsonLib, example) {

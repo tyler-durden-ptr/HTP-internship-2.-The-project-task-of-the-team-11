@@ -3,7 +3,7 @@ project(ntr_queue)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(GTest CONFIG REQUIRED)
+
 find_package(RapidJSON CONFIG REQUIRED)
 
 file(GLOB TEST_SRC tests/*.cpp)

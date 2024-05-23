@@ -686,10 +686,6 @@ static rapidjson::Value serializeNonTrivialObject(const MeasObjectToAddMod& obj,
     return result;
 }
 
-
-// ------------------------------------------------------------------
-
-
 static rapidjson::Value serializeNonTrivialObject(const ReportConfigEUTRA::ReportConfigEUTRA__triggerType::ReportConfigEUTRA__triggerType_u::ReportConfigEUTRA__triggerType__periodical& obj, auto& alloc) {
     rapidjson::Value result;
     result.SetObject();
@@ -1519,17 +1515,23 @@ static rapidjson::Value serializeNonTrivialObject(const MeasConfig& obj, auto& a
     return result;
 }
 
+static rapidjson::Value serializeNonTrivialObject(const vran::rrc_cu::lte::UeBlindRequest& obj, auto& alloc) {
+    rapidjson::Value result;
+    result.SetObject();
+    result.AddMember("target_cell_id", obj.target_cell_id, alloc);
+    if (obj.measConfig != nullptr) { // TODO: throw if nullptr, because is not an optional field
+        result.AddMember("measConfig", serializeNonTrivialObject(*obj.measConfig, alloc), alloc);
+    }
+    return result;
+}
 
 void UeBlindRequestWrapper::serialize(rapidjson::Document& config) const {
     auto& allocator = config.GetAllocator();
     config.SetObject();
-    config.AddMember("target_cell_id", target_cell_id, allocator);
-    if (measConfig != nullptr) { // TODO: throw if nullptr, because is not an optional field
-        config.AddMember("measConfig", serializeNonTrivialObject(*measConfig, allocator), allocator);
-    }
+    config.AddMember("UeBlindRequest", serializeNonTrivialObject(*this, allocator), allocator);
 }
 
 
-void UeBlindRequestWrapper::deserialize(const rapidjson::Document &) {
- // TODO
+void UeBlindRequestWrapper::deserialize(const rapidjson::Document & config) {
+   auto& result = config["UeBlindRequest"];
 }

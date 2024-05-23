@@ -10,7 +10,7 @@
 #include <entity/UeBlindRequestWrapper.h>
 
 template <typename T>
-concept serializableConcept = requires(T t, rapidjson::Document& config, const rapidjson::Document constConfig) {
+concept serializableConcept = requires(T t, rapidjson::Document& config, const rapidjson::Document& constConfig) {
    { t.serialize(config) } -> std::same_as<void>;
     { t.deserialize(constConfig) } -> std::same_as<void>;
 };
@@ -37,7 +37,7 @@ TEST(UeBlindRequest, example_serialize) {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     d.Accept(writer);
     ASSERT_EQ(std::string(buffer.GetString(), buffer.GetLength()),
-        R"({"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}})");
+        R"({"UeBlindRequest":{"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}}})");
 }
 
 TEST(rapidjsonLib, example) {

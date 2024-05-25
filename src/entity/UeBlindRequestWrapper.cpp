@@ -1748,7 +1748,16 @@ void UeBlindRequestWrapper::serialize(rapidjson::Document& config) const {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
-static void deserialize(MobilityStateParameters& result, const rapidjson::Value& value) {
+using deleters_t = std::vector<std::function<void()>>;
+
+template <typename T>
+static T* allocate(deleters_t& deleters) {
+  T* t = new T();
+  deleters.push_back([=]() { delete t; });
+  return t;
+}
+
+static void deserialize(MobilityStateParameters& result, const rapidjson::Value& value, deleters_t&) {
   static_assert(sizeof(decltype(MobilityStateParameters::t_HystNormal)) == 8);
   result.t_Evaluation = value["t_Evaluation"].GetInt64();
   result.t_HystNormal = value["t_HystNormal"].GetInt64();
@@ -1756,7 +1765,7 @@ static void deserialize(MobilityStateParameters& result, const rapidjson::Value&
   result.n_CellChangeHigh = value["n_CellChangeHigh"].GetInt64();
 }
 
-static void deserialize(SpeedStateScaleFactors& result, const rapidjson::Value& value) {
+static void deserialize(SpeedStateScaleFactors& result, const rapidjson::Value& value, deleters_t&) {
   static_assert(sizeof(decltype(SpeedStateScaleFactors::sf_Medium)) == 8);
   result.sf_Medium = value["sf_Medium"].GetInt64();
   result.sf_High = value["sf_High"].GetInt64();
@@ -1764,23 +1773,25 @@ static void deserialize(SpeedStateScaleFactors& result, const rapidjson::Value& 
 
 static void deserialize(
     MeasConfig::MeasConfig__speedStatePars::MeasConfig__speedStatePars_u::MeasConfig__speedStatePars__setup& result,
-    const rapidjson::Value& value) {
-  deserialize(result.mobilityStateParameters, value["mobilityStateParameters"]);
-  deserialize(result.timeToTrigger_SF, value["timeToTrigger_SF"]);
+    const rapidjson::Value& value, deleters_t& deleters) {
+  deserialize(result.mobilityStateParameters, value["mobilityStateParameters"], deleters);
+  deserialize(result.timeToTrigger_SF, value["timeToTrigger_SF"], deleters);
 }
 
-static void deserialize(MeasConfig::MeasConfig__speedStatePars& result, const rapidjson::Value& value) {
+static void deserialize(MeasConfig::MeasConfig__speedStatePars& result, const rapidjson::Value& value,
+                        deleters_t& deleters) {
   auto it = value.FindMember("release");
   if (it != value.MemberEnd()) {
     result.present = MeasConfig__speedStatePars_PR_release;
     result.choice.release = it->value.GetInt();
   } else if ((it = value.FindMember("setup")) != value.MemberEnd()) {
     result.present = MeasConfig__speedStatePars_PR_setup;
-    deserialize(result.choice.setup, it->value);
+    deserialize(result.choice.setup, it->value, deleters);
   }
 }
 
-static void deserialize(MeasConfig::MeasConfig__measScaleFactor_r12& result, const rapidjson::Value& value) {
+static void deserialize(MeasConfig::MeasConfig__measScaleFactor_r12& result, const rapidjson::Value& value,
+                        deleters_t&) {
   auto it = value.FindMember("release");
   if (it != value.MemberEnd()) {
     result.present = MeasConfig__measScaleFactor_r12_PR_release;
@@ -1791,72 +1802,29 @@ static void deserialize(MeasConfig::MeasConfig__measScaleFactor_r12& result, con
   }
 }
 
-namespace {
-namespace detail {
-template <size_t, typename...>
-struct getTypeByIdx {
-  using type = void;
-};
-
-template <typename Head, typename... Tail>
-struct getTypeByIdx<0, Head, Tail...> {
-  using type = Head;
-};
-
-template <size_t Index, typename Head, typename... Tail>
-struct getTypeByIdx<Index, Head, Tail...> {
-  using type = getTypeByIdx<Index - 1, Tail...>::type;
-};
-
-template <size_t Idx, size_t MaxIdx, typename... Types>
-struct CallerWithCatchImpl {
-  static void call(std::tuple<std::function<void(Types*)>...>& funcs) {
-    using T = getTypeByIdx<Idx, Types...>::type;
-    T* t = new T();
-    try {
-      std::invoke(std::get<Idx>(funcs), t);
-      CallerWithCatchImpl<Idx + 1, MaxIdx, Types...>::call(funcs);
-    } catch (...) {
-      delete t;
-      throw;
-    }
-  }
-};
-
-template <size_t Idx, typename... Types>
-struct CallerWithCatchImpl<Idx, Idx, Types...> {
-  static void call(std::tuple<std::function<void(Types*)>...>&) {}
-};
-} // namespace detail
-
-template <typename... Types>
-  requires(0 < sizeof...(Types))
-struct CallerWithCatch {
-  static void call(std::tuple<std::function<void(Types*)>...> funcs) {
-    detail::CallerWithCatchImpl<0, sizeof...(Types), Types...>::call(funcs);
-  }
-};
-} // namespace
-
-static void deserialize(MeasConfig& result, const rapidjson::Value& value) {
-  CallerWithCatch<MeasConfig::MeasConfig__speedStatePars, MeasConfig::MeasConfig__measScaleFactor_r12>::call(
-      {[&](auto* v) {
-         deserialize(*v, value["speedStatePars"]);
-         result.speedStatePars = v;
-       },
-       [&](auto* v) {
-         deserialize(*v, value["measScaleFactor_r12"]);
-         result.measScaleFactor_r12 = v;
-       }});
+static void deserialize(MeasConfig& result, const rapidjson::Value& value, deleters_t& deleters) {
+  result.speedStatePars = allocate<MeasConfig::MeasConfig__speedStatePars>(deleters);
+  deserialize(*result.speedStatePars, value["speedStatePars"], deleters);
+  result.measScaleFactor_r12 = allocate<MeasConfig::MeasConfig__measScaleFactor_r12>(deleters);
+  deserialize(*result.measScaleFactor_r12, value["measScaleFactor_r12"], deleters);
 }
 
-
 void UeBlindRequestWrapper::deserialize(const rapidjson::Value& config) {
-  auto& result = config["UeBlindRequest"];
-  using ::deserialize;
-  this->target_cell_id = result["target_cell_id"].GetUint();
-  CallerWithCatch<MeasConfig>::call({[&](auto* v) {
-    deserialize(*v, result["measConfig"]);
-    this->measConfig = v;
-  }});
+  for (auto&& deleter : deletersForAllocatedMemory) {
+    deleter();
+  }
+  deletersForAllocatedMemory.clear();
+  try {
+    auto& result = config["UeBlindRequest"];
+    using ::deserialize;
+    this->target_cell_id = result["target_cell_id"].GetUint();
+    this->measConfig = allocate<MeasConfig>(deletersForAllocatedMemory);
+    deserialize(*this->measConfig, result["measConfig"], deletersForAllocatedMemory);
+  } catch (...) {
+    for (auto&& deleter : deletersForAllocatedMemory) {
+      deleter();
+    }
+    deletersForAllocatedMemory.clear();
+    throw;
+  }
 }

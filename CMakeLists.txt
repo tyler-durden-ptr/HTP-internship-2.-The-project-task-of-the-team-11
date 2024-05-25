@@ -7,7 +7,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
 add_subdirectory(src)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ntr_serializer)

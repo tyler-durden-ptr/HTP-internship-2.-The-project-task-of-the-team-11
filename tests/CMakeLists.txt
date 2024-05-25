@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.21)
-project(ntr_serializer_tests)
+project(tests)
 
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(GTest CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
-file(GLOB TEST_SRC ./*.cpp)
-file(GLOB ENTITY_SRC ../src/entity/*.cpp)
-add_executable(ntr_serializer_tests ${TEST_SRC} ${ENTITY_SRC})
-
-#target_include_directories(${PROJECT_NAME} PRIVATE ../src ../itti_structs/asn1c_build)
+add_executable(${PROJECT_NAME} test.cpp)
+#target_link_libraries(${PROJECT_NAME} PRIVATE ntr_serializer)
+#target_link_libraries(${PROJECT_NAME} PRIVATE rapidjson)
+#target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
 # Compiler specific warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -42,6 +41,3 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     message(STATUS "Enabling _GLIBCXX_DEBUG...")
     target_compile_options(${PROJECT_NAME} PUBLIC -D_GLIBCXX_DEBUG)
 endif()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-target_link_libraries(${PROJECT_NAME} PRIVATE rapidjson)

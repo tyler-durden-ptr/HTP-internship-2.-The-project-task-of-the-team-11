@@ -1,11 +1,16 @@
 #pragma once
 
-#include <rapidjson/document.h>
-
 #include "../../itti_structs/types.hpp"
 
-struct UeBlindRequestWrapper : vran::rrc_cu::lte::UeBlindRequest {
-public:
-    void serialize(rapidjson::Document& config) const;
-    void deserialize(const rapidjson::Document& config);
+#include <entity/SerializeWrapper.h>
+#include <rapidjson/document.h>
+
+struct UeBlindRequestWrapper : SerializeWrapper, vran::rrc_cu::lte::UeBlindRequest {
+  UeBlindRequestWrapper() : SerializeWrapper(), UeBlindRequest() {}
+
+  void serialize(rapidjson::Document& config) const override;
+
+  void deserialize(const rapidjson::Value& config) override;
+
+  ~UeBlindRequestWrapper() override = default;
 };

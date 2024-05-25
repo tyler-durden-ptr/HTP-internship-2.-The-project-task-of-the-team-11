@@ -1,24 +1,32 @@
 #pragma once
 
-#include <utility/ConcurrentQueue.h>
+#include <io/reader/ReadingInfo.h>
 #include <io/reader/StreamReader.h>
+#include <utility/ConcurrentQueue.h>
 
-#include <string_view>
-#include <fstream>
-#include <iostream>
+#include <atomic>
 #include <filesystem>
+#include <format>
+#include <fstream>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <string_view>
 #include <utility>
 
-class FileReader {
-  static void read(std::string_view filename, ConcurrentQueue<Message>& outputQueue) {
+struct FileReader {
+  static void read(std::string_view filename, std::shared_ptr<ConcurrentQueue<Message>> outputQueue,
+                   std::shared_ptr<ReadingInfo> readingInfo) {
     std::ifstream inputFile(filename.data());
-    if (inputFile.fail()) {
-      std::cout << "Failed to open file" << std::endl;
-      std::cout << "Local path: " << std::filesystem::current_path().c_str() << std::endl;
-      return;
+    if (!inputFile.fail()) {
+      StreamReader::read(inputFile, std::move(outputQueue), std::move(readingInfo));
+      inputFile.close();
+    } else {
+      std::cout << std::format("Failed to open input file with name {}\n", filename.data()) << std::endl;
+      std::cout << std::format("Local path: {}\n", std::filesystem::current_path().c_str());
     }
-    StreamReader::read(inputFile, outputQueue);
-    inputFile.close();
   }
 };

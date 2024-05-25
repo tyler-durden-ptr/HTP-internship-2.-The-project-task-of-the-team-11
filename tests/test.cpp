@@ -6,7 +6,6 @@
 #include <string>
 #include <memory>
 
-#include <io/reader/StreamReader.h>
 #include <entity/UeBlindRequestWrapper.h>
 
 template <typename T>
@@ -36,6 +35,7 @@ TEST(UeBlindRequest, example_serialize) {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     d.Accept(writer);
+
     ASSERT_EQ(R"({"UeBlindRequest":{"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}}})",
         std::string(buffer.GetString(), buffer.GetLength()));
 }

@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.21)
-project(ntr_serializer_main)
+project(ntr_serializer)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(GTest CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
-add_subdirectory(src)
-#add_subdirectory(tests)
+file(GLOB ENTITY_SRC entity/*.cpp)
+file(GLOB IO_SRC io/*.cpp)
+file(GLOB UTILITY_SRC utility/*.cpp)
+file(GLOB ITTI_SRC ../itti_structs/asn1c_build/*.cpp)
 
-add_executable(${PROJECT_NAME} main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE ntr_serializer)
+add_library(${PROJECT_NAME} ${ENTITY_SRC} ${IO_SRC} ${UTILITY_SRC} ${ITTI_SRC})
+target_include_directories(${PROJECT_NAME} PUBLIC ../itti_structs/asn1c_build .)
 target_link_libraries(${PROJECT_NAME} PRIVATE rapidjson)
 
 # Compiler specific warnings

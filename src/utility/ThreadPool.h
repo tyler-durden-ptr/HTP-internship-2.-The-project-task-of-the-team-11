@@ -1,8 +1,8 @@
 #pragma once
 
-#pragma once
-
-#pragma once
+#include <io/Message.h>
+#include <io/reader/ReadingInfo.h>
+#include <utility/ConcurrentQueue.h>
 
 #include <queue>
 
@@ -16,57 +16,80 @@
 #include <thread>
 #include <type_traits>
 #include <utility>
-#include <functional>
 
-class Task {
+template <typename OutputType, typename InputType>
+class ThreadPool {
 public:
-  template <typename FuncRetType, typename... Args, typename... FuncTypes>
-  explicit Task(std::function<FuncRetType(FuncTypes...)> func, Args&&... args) : is_void{std::is_void_v<FuncRetType>} {
-    if constexpr (std::is_void_v<FuncRetType>) {
-      void_func = std::bind(func, args...);
-      any_func = []() -> int { return 0; };
-    } else {
-      void_func = []() -> void {};
-      any_func = std::bind(func, args...);
+  explicit ThreadPool(uint32_t num_threads, std::function<OutputType(InputType)> task,
+                      std::shared_ptr<ReadingInfo> readingInfo,
+                      std::shared_ptr<ConcurrentQueue<InputType>> inputQ,
+                      std::shared_ptr<ConcurrentQueue<OutputType>> outputQ)
+      : task(task),
+        readingInfo(std::move(readingInfo)),
+        inputQ(std::move(inputQ)),
+        outputQ(std::move(outputQ)) {
+    threads.reserve(num_threads);
+    for (int i = 0; i < num_threads; ++i) {
+      threads.emplace_back(&ThreadPool::run, this);
     }
   }
 
-  void operator()();
-
-  [[nodiscard]] bool has_result() const;
-
-  [[nodiscard]] std::any get_result() const;
-
-private:
-  std::function<void()> void_func;
-  std::function<std::any()> any_func;
-  std::any any_func_result;
-  bool is_void;
-};
-
-class ThreadPool {
-public:
-  explicit ThreadPool(uint32_t num_threads);
-
-  template <typename Func, typename... Args, typename... FuncTypes>
-  uint64_t add_task(std::function<Func(FuncTypes...)> func, Args&&... args) {
-    const uint64_t task_id = last_idx++;
-
-    std::lock_guard<std::mutex> q_lock(q_mtx);
-    q.emplace(Task(func, std::forward<Args>(args)...), task_id);
-    q_cv.notify_one();
-    return task_id;
+  ~ThreadPool() {
+    quite = true;
+    for (auto& thread : threads) {
+      thread.join();
+    }
   }
 
-  ~ThreadPool();
-
 private:
-  void run();
+  void run() {
+    using namespace std::chrono_literals;
 
+    while (!quite.load()) {
+      std::optional<InputType> message = inputQ->pop(1s);
+      if (message.has_value()) {
+        size_t prev_idx = inputIdx++;
+        try {
+          OutputType result = task(std::move(message.value()));
+          {
+            std::lock_guard g(messagesMutex);
+            if (prev_idx == outputIdx.load()) {
+              outputQ->push(std::move(result));
+              ++outputIdx;
+              // TODO: 2 call in map
+              while (messages.contains(++prev_idx)) {
+                outputQ->push(std::move(messages[prev_idx]));
+                ++outputIdx;
+                messages.erase(prev_idx);
+              }
+            } else {
+              messages[prev_idx] = std::move(result);
+            }
+          }
+        } catch (...) {
+          std::cerr << "Exception in thread pool \n";
+        }
+      } else {
+        if (readingInfo->finished) {
+          quite = true;
+        }
+      }
+    }
+  }
+
+  std::function<OutputType(InputType)> task;
+  std::shared_ptr<ReadingInfo> readingInfo;
+  std::shared_ptr<ConcurrentQueue<InputType>> inputQ;
+  std::shared_ptr<ConcurrentQueue<OutputType>> outputQ;
+  std::atomic<size_t> inputIdx{0};
+  std::atomic<size_t> outputIdx{0};
+  std::unordered_map<size_t, OutputType> messages{};
+  std::mutex messagesMutex{};
   std::vector<std::thread> threads;
-  std::queue<std::pair<Task, uint64_t>> q;
-  std::mutex q_mtx;
-  std::condition_variable q_cv;
   std::atomic<bool> quite{false};
-  std::atomic<uint64_t> last_idx{0};
 };
+
+template <typename OutputType, typename InputType>
+ThreadPool(uint32_t num_threads, std::function<OutputType(InputType)> task,
+           std::shared_ptr<ConcurrentQueue<InputType>> inputQ, std::shared_ptr<ConcurrentQueue<OutputType>> outputQ)
+    -> ThreadPool<OutputType, InputType>;

@@ -1,27 +1,31 @@
 #pragma once
 
-#include <utility/ConcurrentQueue.h>
-#include <io/writer/StreamWriter.h>
 #include <io/Message.h>
+#include <io/writer/StreamWriter.h>
+#include <utility/ConcurrentQueue.h>
 
-#include <string_view>
-#include <fstream>
-#include <iostream>
 #include <filesystem>
+#include <format>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <ostream>
 #include <string>
+#include <string_view>
 #include <utility>
 
 class FileWriter {
-  std::ofstream file;
-
 public:
-
-
-  void write(std::string_view filename, ConcurrentQueue<Message>& inputQueue) {
+  static void write(std::string_view filename, std::shared_ptr<ConcurrentQueue<Message>> inputQueue,
+                    const std::function<bool(size_t)>& pred) {
     std::ofstream file;
     file.open(filename.data());
-    myfile << "Writing this to a file.\n";
-    myfile.close();
-    return 0;
+    if (file.fail()) {
+      std::cout << std::format("Failed to open output file with name {}\n", filename.data());
+      std::cout << std::format("Local path: {}\n", std::filesystem::current_path().c_str());
+      return;
+    }
+    StreamWriter::write(file, std::move(inputQueue), pred);
   }
 };

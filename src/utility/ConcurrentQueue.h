@@ -5,6 +5,7 @@
 #include <mutex>
 #include <utility>
 #include <optional>
+#include <chrono>
 
 template <typename T>
 class ConcurrentQueue {
@@ -48,5 +49,19 @@ public:
     T result = std::move(queue_.back());
     queue_.pop_back();
     return result;
+  }
+
+  template <typename Rep, typename Period>
+  std::optional<T> pop(std::chrono::duration<Rep, Period> duration) {
+    std::unique_lock g(mutex_);
+    cv_.wait_for(g, duration, [this] {
+      return !queue_.empty();
+    });
+    if (!queue_.empty()) {
+      T result = std::move(queue_.back());
+      queue_.pop_back();
+      return result;
+    }
+    return std::nullopt;
   }
 };

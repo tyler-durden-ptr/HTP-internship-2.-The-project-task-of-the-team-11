@@ -1850,7 +1850,8 @@ static void deserialize(MeasConfig& result, const rapidjson::Value& value) {
        }});
 }
 
-void UeBlindRequestWrapper::deserialize(const rapidjson::Document& config) {
+
+void UeBlindRequestWrapper::deserialize(const rapidjson::Value& config) {
   auto& result = config["UeBlindRequest"];
   using ::deserialize;
   this->target_cell_id = result["target_cell_id"].GetUint();

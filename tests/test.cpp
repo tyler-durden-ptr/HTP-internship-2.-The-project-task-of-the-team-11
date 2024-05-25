@@ -5,8 +5,8 @@
 
 #include <string>
 #include <memory>
-#include <iostream>
 
+#include <io/reader/StreamReader.h>
 #include <entity/UeBlindRequestWrapper.h>
 
 template <typename T>

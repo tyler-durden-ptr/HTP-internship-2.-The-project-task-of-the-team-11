@@ -7,9 +7,9 @@ find_package(GTest CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} test.cpp)
-#target_link_libraries(${PROJECT_NAME} PRIVATE ntr_serializer)
-#target_link_libraries(${PROJECT_NAME} PRIVATE rapidjson)
-#target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+target_link_libraries(${PROJECT_NAME} PRIVATE ntr_serializer)
+target_link_libraries(${PROJECT_NAME} PRIVATE rapidjson)
+target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
 # Compiler specific warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

@@ -1,0 +1,28 @@
+[
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 24,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 15,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 200
+        },
+        "measScaleFactor_r12": {
+          "release": 202
+        }
+      }
+    }
+  }
+]

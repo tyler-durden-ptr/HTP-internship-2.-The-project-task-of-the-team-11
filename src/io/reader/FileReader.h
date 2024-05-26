@@ -1,5 +1,6 @@
 #pragma once
 
+#include <io/InputMessage.h>
 #include <io/reader/ReadingInfo.h>
 #include <io/reader/StreamReader.h>
 #include <utility/ConcurrentQueue.h>
@@ -18,11 +19,11 @@
 #include <utility>
 
 struct FileReader {
-  static void read(std::string_view filename, std::shared_ptr<ConcurrentQueue<Message>> outputQueue,
+  static void read(std::string_view filename, std::shared_ptr<ConcurrentQueue<InputMessage>> queue,
                    std::shared_ptr<ReadingInfo> readingInfo) {
     std::ifstream inputFile(filename.data());
     if (!inputFile.fail()) {
-      StreamReader::read(inputFile, std::move(outputQueue), std::move(readingInfo));
+      StreamReader::read(inputFile, std::move(queue), std::move(readingInfo));
       inputFile.close();
     } else {
       std::cout << std::format("Failed to open input file with name {}\n", filename.data()) << std::endl;

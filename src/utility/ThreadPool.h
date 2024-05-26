@@ -1,14 +1,14 @@
 #pragma once
 
-#include <io/Message.h>
+#include <io/InputMessage.h>
 #include <io/reader/ReadingInfo.h>
 #include <utility/ConcurrentQueue.h>
 
 #include <queue>
 
-#include <any>
 #include <atomic>
 #include <cassert>
+#include <format>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -21,8 +21,7 @@ template <typename OutputType, typename InputType>
 class ThreadPool {
 public:
   explicit ThreadPool(uint32_t num_threads, std::function<OutputType(InputType)> task,
-                      std::shared_ptr<ReadingInfo> readingInfo,
-                      std::shared_ptr<ConcurrentQueue<InputType>> inputQ,
+                      std::shared_ptr<ReadingInfo> readingInfo, std::shared_ptr<ConcurrentQueue<InputType>> inputQ,
                       std::shared_ptr<ConcurrentQueue<OutputType>> outputQ)
       : task(task),
         readingInfo(std::move(readingInfo)),
@@ -66,6 +65,8 @@ private:
               messages[prev_idx] = std::move(result);
             }
           }
+        } catch (std::exception& ex) {
+          std::cerr << std::format("Exception in thread pool: {}\n", ex.what());
         } catch (...) {
           std::cerr << "Exception in thread pool \n";
         }
@@ -92,4 +93,4 @@ private:
 template <typename OutputType, typename InputType>
 ThreadPool(uint32_t num_threads, std::function<OutputType(InputType)> task,
            std::shared_ptr<ConcurrentQueue<InputType>> inputQ, std::shared_ptr<ConcurrentQueue<OutputType>> outputQ)
-    -> ThreadPool<OutputType, InputType>;
+    -> ThreadPool<std::remove_cvref_t<OutputType>, std::remove_cvref_t<InputType>>;

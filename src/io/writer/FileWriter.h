@@ -1,6 +1,6 @@
 #pragma once
 
-#include <io/Message.h>
+#include <io/OutputMessage.h>
 #include <io/writer/StreamWriter.h>
 #include <utility/ConcurrentQueue.h>
 
@@ -17,7 +17,7 @@
 
 class FileWriter {
 public:
-  static void write(std::string_view filename, std::shared_ptr<ConcurrentQueue<Message>> inputQueue,
+  static void write(std::string_view filename, std::shared_ptr<ConcurrentQueue<OutputMessage>> inputQueue,
                     const std::function<bool(size_t)>& pred) {
     std::ofstream file;
     file.open(filename.data());

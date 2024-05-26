@@ -46,8 +46,8 @@ public:
     cv_.wait(g, [this] {
       return !queue_.empty();
     });
-    T result = std::move(queue_.back());
-    queue_.pop_back();
+    T result = std::move(queue_.front());
+    queue_.pop_front();
     return result;
   }
 
@@ -58,8 +58,8 @@ public:
       return !queue_.empty();
     });
     if (!queue_.empty()) {
-      T result = std::move(queue_.back());
-      queue_.pop_back();
+      T result = std::move(queue_.front());
+      queue_.pop_front();
       return result;
     }
     return std::nullopt;

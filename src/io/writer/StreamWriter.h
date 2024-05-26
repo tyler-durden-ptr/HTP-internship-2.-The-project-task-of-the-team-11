@@ -1,6 +1,6 @@
 #pragma once
 
-#include <io/Message.h>
+#include <io/OutputMessage.h>
 #include <io/writer/StreamWriter.h>
 #include <utility/ConcurrentQueue.h>
 
@@ -15,19 +15,19 @@
 #include <utility>
 
 struct StreamWriter {
-  static void write(std::ostream& stream, std::shared_ptr<ConcurrentQueue<Message>> inputQueue,
+  static void write(std::ostream& stream, std::shared_ptr<ConcurrentQueue<OutputMessage>> queue,
                     const std::function<bool(size_t)>& pred) {
     using namespace std::chrono_literals;
     stream << "[";
     size_t numOfMessages = 0;
     while (pred(numOfMessages)) {
 
-      std::optional<Message> message = inputQueue->pop(1s);
+      std::optional<OutputMessage> message = queue->pop(1s);
       if (message.has_value()) {
         if (numOfMessages > 0) {
           stream << ",";
         }
-        stream << messageToString(std::move(message.value()));
+        stream << messageToString(message.value());
         ++numOfMessages;
       }
     }

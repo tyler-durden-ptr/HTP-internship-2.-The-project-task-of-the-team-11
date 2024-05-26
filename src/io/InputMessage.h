@@ -8,30 +8,23 @@
 
 #include <cstddef>
 #include <format>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <variant>
 
-using Message = std::variant<rapidjson::Value, rapidjson::Document>;
+using InputMessage = rapidjson::Value;
 
-inline std::string messageToString(Message&& message) {
-  rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  std::visit([&](auto&& value) { value.Accept(writer); }, message);
-  return {buffer.GetString()};
-}
-
-// TODO: rvalue or lvalue receive
-inline std::unique_ptr<SerializeWrapper> messageToWrapper(Message& message) {
-  for (auto&& member : std::visit([&](auto&& value) { return value.GetObject(); }, message)) {
+inline std::unique_ptr<SerializeWrapper> messageToWrapper(const InputMessage& message) {
+  for (auto&& member : message.GetObject()) {
     std::string name(member.name.GetString());
     if (name == "UeBlindRequest") {
       return std::make_unique<UeBlindRequestWrapper>();
-    } else if (name == "") {
-      // TODO: other structs
-    } else {
+    }
+    // TODO: other structs
+    else {
       throw std::domain_error(
           std::format("messageToWrapper don't know ITTI struct with name {}", member.name.GetString()));
     }

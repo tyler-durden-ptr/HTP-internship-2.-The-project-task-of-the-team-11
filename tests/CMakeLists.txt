@@ -7,6 +7,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} test.cpp)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ntr_serializer)
 target_link_libraries(${PROJECT_NAME} PRIVATE rapidjson)
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)

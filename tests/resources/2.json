@@ -1,0 +1,171 @@
+[
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 1,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 2,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 3,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 4,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 5,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 6,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 7,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 8,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 9,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 10,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 11,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 12,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  },
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 13,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 100
+        },
+        "measScaleFactor_r12": {
+          "release": 101
+        }
+      }
+    }
+  }
+]

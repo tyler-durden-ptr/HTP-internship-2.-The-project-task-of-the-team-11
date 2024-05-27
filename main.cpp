@@ -10,6 +10,6 @@ int main(int argc, char* argv[]) {
       std::cout << std::format("Incorrect number of arguments ({}), help: app <input_file> <output_file>", argc - 1) << std::endl;
       return 1;
     }
-    Runner::run(argv[1], argv[2], 2);
+    Runner::runWithFiles(argv[1], argv[2], 2);
     return 0;
 }

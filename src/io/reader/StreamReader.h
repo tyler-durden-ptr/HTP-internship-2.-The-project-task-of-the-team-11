@@ -1,7 +1,7 @@
 #pragma once
 
 #include <io/InputMessage.h>
-#include <io/reader/ReadingInfo.h>
+#include <ControlBlock.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -17,7 +17,7 @@
 
 struct StreamReader {
   static void read(std::istream& stream, std::shared_ptr<ConcurrentQueue<InputMessage>> outputQueue,
-                   std::shared_ptr<ReadingInfo> info) {
+                   std::shared_ptr<ControlBlock> info) {
     constexpr size_t read_size = 4096;
     stream.exceptions(std::ios_base::badbit);
     if (!stream) {
@@ -34,8 +34,8 @@ struct StreamReader {
     document.Parse(jsonBody.c_str());
     for (auto&& arrayElem : document.GetArray()) {
       outputQueue->push(std::move(arrayElem));
-      info->numOfMessages.fetch_add(1);
+      info->numberOfReadMessages.fetch_add(1);
     }
-    info->finished = true;
+    info->readingFinished = true;
   }
 };

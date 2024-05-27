@@ -1,7 +1,7 @@
 #pragma once
 
 #include <io/InputMessage.h>
-#include <io/reader/ReadingInfo.h>
+#include <ControlBlock.h>
 #include <io/reader/StreamReader.h>
 #include <utility/ConcurrentQueue.h>
 
@@ -20,7 +20,7 @@
 
 struct FileReader {
   static void read(std::string_view filename, std::shared_ptr<ConcurrentQueue<InputMessage>> queue,
-                   std::shared_ptr<ReadingInfo> readingInfo) {
+                   std::shared_ptr<ControlBlock> readingInfo) {
     std::ifstream inputFile(filename.data());
     if (!inputFile.fail()) {
       StreamReader::read(inputFile, std::move(queue), std::move(readingInfo));

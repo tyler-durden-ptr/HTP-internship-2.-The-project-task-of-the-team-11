@@ -7,6 +7,7 @@
 #include <rapidjson/document.h>
 
 #include <algorithm>
+#include <format>
 #include <functional>
 #include <iterator>
 #include <sstream>
@@ -1757,25 +1758,34 @@ static T* allocate(deleters_t& deleters) {
   return t;
 }
 
+static const rapidjson::Value& getChecked(const rapidjson::Value& value, std::string_view name) {
+  auto it = value.FindMember(name.data());
+  if (it != value.MemberEnd()) {
+    return it->value;
+  } else {
+    throw std::invalid_argument(std::format("rapidjson::Value don't have {} field\n", name.data()));
+  }
+}
+
 static void deserialize(MobilityStateParameters& result, const rapidjson::Value& value, deleters_t&) {
   static_assert(sizeof(decltype(MobilityStateParameters::t_HystNormal)) == 8);
-  result.t_Evaluation = value["t_Evaluation"].GetInt64();
-  result.t_HystNormal = value["t_HystNormal"].GetInt64();
-  result.n_CellChangeMedium = value["n_CellChangeMedium"].GetInt64();
-  result.n_CellChangeHigh = value["n_CellChangeHigh"].GetInt64();
+  result.t_Evaluation = getChecked(value, "t_Evaluation").GetInt64();
+  result.t_HystNormal = getChecked(value, "t_HystNormal").GetInt64();
+  result.n_CellChangeMedium = getChecked(value, "n_CellChangeMedium").GetInt64();
+  result.n_CellChangeHigh = getChecked(value, "n_CellChangeHigh").GetInt64();
 }
 
 static void deserialize(SpeedStateScaleFactors& result, const rapidjson::Value& value, deleters_t&) {
   static_assert(sizeof(decltype(SpeedStateScaleFactors::sf_Medium)) == 8);
-  result.sf_Medium = value["sf_Medium"].GetInt64();
-  result.sf_High = value["sf_High"].GetInt64();
+  result.sf_Medium = getChecked(value, "sf_Medium").GetInt64();
+  result.sf_High = getChecked(value, "sf_High").GetInt64();
 }
 
 static void deserialize(
     MeasConfig::MeasConfig__speedStatePars::MeasConfig__speedStatePars_u::MeasConfig__speedStatePars__setup& result,
     const rapidjson::Value& value, deleters_t& deleters) {
-  deserialize(result.mobilityStateParameters, value["mobilityStateParameters"], deleters);
-  deserialize(result.timeToTrigger_SF, value["timeToTrigger_SF"], deleters);
+  deserialize(result.mobilityStateParameters, getChecked(value, "mobilityStateParameters"), deleters);
+  deserialize(result.timeToTrigger_SF, getChecked(value, "timeToTrigger_SF"), deleters);
 }
 
 static void deserialize(MeasConfig::MeasConfig__speedStatePars& result, const rapidjson::Value& value,
@@ -1804,27 +1814,32 @@ static void deserialize(MeasConfig::MeasConfig__measScaleFactor_r12& result, con
 
 static void deserialize(MeasConfig& result, const rapidjson::Value& value, deleters_t& deleters) {
   result.speedStatePars = allocate<MeasConfig::MeasConfig__speedStatePars>(deleters);
-  deserialize(*result.speedStatePars, value["speedStatePars"], deleters);
+  deserialize(*result.speedStatePars, getChecked(value, "speedStatePars"), deleters);
   result.measScaleFactor_r12 = allocate<MeasConfig::MeasConfig__measScaleFactor_r12>(deleters);
-  deserialize(*result.measScaleFactor_r12, value["measScaleFactor_r12"], deleters);
+  deserialize(*result.measScaleFactor_r12, getChecked(value, "measScaleFactor_r12"), deleters);
 }
 
 void UeBlindRequestWrapper::deserialize(const rapidjson::Value& config) {
+  clear();
+  try {
+    auto& result = getChecked(config, "UeBlindRequest");;
+    using ::deserialize;
+    this->target_cell_id = getChecked(result, "target_cell_id").GetUint();
+    this->measConfig = allocate<MeasConfig>(deletersForAllocatedMemory);
+    deserialize(*this->measConfig, getChecked(result, "measConfig"), deletersForAllocatedMemory);
+  } catch (...) {
+    clear();
+    throw;
+  }
+}
+
+UeBlindRequestWrapper::~UeBlindRequestWrapper() {
+    clear();
+}
+
+void UeBlindRequestWrapper::clear() noexcept {
   for (auto&& deleter : deletersForAllocatedMemory) {
     deleter();
   }
   deletersForAllocatedMemory.clear();
-  try {
-    auto& result = config["UeBlindRequest"];
-    using ::deserialize;
-    this->target_cell_id = result["target_cell_id"].GetUint();
-    this->measConfig = allocate<MeasConfig>(deletersForAllocatedMemory);
-    deserialize(*this->measConfig, result["measConfig"], deletersForAllocatedMemory);
-  } catch (...) {
-    for (auto&& deleter : deletersForAllocatedMemory) {
-      deleter();
-    }
-    deletersForAllocatedMemory.clear();
-    throw;
-  }
-}
+};

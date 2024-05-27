@@ -5,12 +5,12 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
-#include <iostream>
-#include <filesystem>
 
 template <typename T>
 concept serializableConcept = requires(T t, rapidjson::Document& config, const rapidjson::Document& constConfig) {
@@ -80,8 +80,41 @@ TEST(UeBlindRequest, file_with_several_itti_2) {
   ASSERT_GE(inputData.size(), 1);
   std::stringstream inputSs(inputData);
   std::stringstream outputSs;
-  Runner::run(inputSs, outputSs, 3);
+  Runner::runWithStreams(inputSs, outputSs, 3);
   ASSERT_EQ(getDefaultRepresentation(inputData), getDefaultRepresentation(outputSs.str()));
+}
+
+TEST(InvalidITTI, writer_dont_wait_invalid_messages) {
+  std::ifstream inputFile("resources/invalid1.json");
+  std::string inputData;
+  if (inputFile) {
+    std::ostringstream ss;
+    ss << inputFile.rdbuf();
+    inputData = ss.str();
+  }
+  std::cout << std::format("Local path: {}\n", std::filesystem::current_path().c_str());
+  ASSERT_GE(inputData.size(), 1);
+  std::stringstream inputSs(inputData);
+  std::stringstream outputSs;
+  Runner::runWithStreams(inputSs, outputSs, 3);
+  ASSERT_EQ(getDefaultRepresentation(
+                R"(
+[
+  {
+    "UeBlindRequest": {
+      "target_cell_id": 8,
+      "measConfig": {
+        "speedStatePars": {
+          "release": 200
+        },
+        "measScaleFactor_r12": {
+          "release": 202
+        }
+      }
+    }
+  }
+])"),
+            getDefaultRepresentation(outputSs.str()));
 }
 
 TEST(rapidjsonLib, example) {

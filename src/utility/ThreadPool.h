@@ -1,7 +1,7 @@
 #pragma once
 
+#include <ControlBlock.h>
 #include <io/InputMessage.h>
-#include <io/reader/ReadingInfo.h>
 #include <utility/ConcurrentQueue.h>
 
 #include <queue>
@@ -21,10 +21,10 @@ template <typename OutputType, typename InputType>
 class ThreadPool {
 public:
   explicit ThreadPool(uint32_t num_threads, std::function<OutputType(InputType)> task,
-                      std::shared_ptr<ReadingInfo> readingInfo, std::shared_ptr<ConcurrentQueue<InputType>> inputQ,
+                      std::shared_ptr<ControlBlock> readingInfo, std::shared_ptr<ConcurrentQueue<InputType>> inputQ,
                       std::shared_ptr<ConcurrentQueue<OutputType>> outputQ)
       : task(task),
-        readingInfo(std::move(readingInfo)),
+        controlBlock(std::move(readingInfo)),
         inputQ(std::move(inputQ)),
         outputQ(std::move(outputQ)) {
     threads.reserve(num_threads);
@@ -41,37 +41,52 @@ public:
   }
 
 private:
-  void run() {
+  std::optional<std::pair<size_t, InputType>> readQueue() {
     using namespace std::chrono_literals;
+    std::lock_guard g(inputQMutex);
+    std::optional<InputType> message = inputQ->pop(1s);
+    if (message.has_value()) {
+      return {std::pair{inputIdx++, std::move(message.value())}};
+    }
+    return std::nullopt;
+  }
 
+  void run() {
     while (!quite.load()) {
-      std::optional<InputType> message = inputQ->pop(1s);
-      if (message.has_value()) {
-        size_t prev_idx = inputIdx++;
+      auto opt = readQueue();
+      if (opt.has_value()) {
+        auto&& [prev_idx, message] = opt.value();
+        std::optional<OutputType> resultOpt(std::nullopt);
         try {
-          OutputType result = task(std::move(message.value()));
-          {
-            std::lock_guard g(messagesMutex);
-            if (prev_idx == outputIdx.load()) {
-              outputQ->push(std::move(result));
-              ++outputIdx;
-              // TODO: 2 call in map
-              while (messages.contains(++prev_idx)) {
-                outputQ->push(std::move(messages[prev_idx]));
-                ++outputIdx;
-                messages.erase(prev_idx);
-              }
-            } else {
-              messages[prev_idx] = std::move(result);
-            }
-          }
+          resultOpt = task(std::move(message));
         } catch (std::exception& ex) {
+          ++controlBlock->numberOfFailedMessages;
           std::cerr << std::format("Exception in thread pool: {}\n", ex.what());
         } catch (...) {
+          ++controlBlock->numberOfFailedMessages;
           std::cerr << "Exception in thread pool \n";
         }
+        {
+          std::lock_guard g(messagesMutex);
+          if (prev_idx == outputIdx) {
+            if (resultOpt.has_value()) {
+              outputQ->push(std::move(resultOpt.value()));
+            }
+            ++outputIdx;
+            while (messages.contains(++prev_idx)) {
+              auto valueFromMap = std::move(messages[prev_idx]);
+              if (valueFromMap.has_value()) {
+                outputQ->push(std::move(valueFromMap.value()));
+              }
+              ++outputIdx;
+              messages.erase(prev_idx);
+            }
+          } else {
+            messages[prev_idx] = std::move(resultOpt);
+          }
+        }
       } else {
-        if (readingInfo->finished) {
+        if (controlBlock->readingFinished && inputIdx.load() == controlBlock->numberOfReadMessages) {
           quite = true;
         }
       }
@@ -79,12 +94,13 @@ private:
   }
 
   std::function<OutputType(InputType)> task;
-  std::shared_ptr<ReadingInfo> readingInfo;
+  std::shared_ptr<ControlBlock> controlBlock;
   std::shared_ptr<ConcurrentQueue<InputType>> inputQ;
+  std::mutex inputQMutex{};
   std::shared_ptr<ConcurrentQueue<OutputType>> outputQ;
   std::atomic<size_t> inputIdx{0};
-  std::atomic<size_t> outputIdx{0};
-  std::unordered_map<size_t, OutputType> messages{};
+  size_t outputIdx{0};
+  std::unordered_map<size_t, std::optional<OutputType>> messages{};
   std::mutex messagesMutex{};
   std::vector<std::thread> threads;
   std::atomic<bool> quite{false};

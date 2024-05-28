@@ -1,7 +1,7 @@
 #pragma once
 
-#include <io/InputMessage.h>
 #include <ControlBlock.h>
+#include <io/InputMessage.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>

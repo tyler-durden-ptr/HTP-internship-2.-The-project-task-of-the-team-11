@@ -1,7 +1,7 @@
 #include <Runner.h>
 #include <entity/include/ErabReleaseResponseWrapper.h>
-#include <entity/include/UeBlindRequestWrapper.h>
 #include <entity/include/PathSwitchRequestWrapper.h>
+#include <entity/include/UeBlindRequestWrapper.h>
 #include <gtest/gtest.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>

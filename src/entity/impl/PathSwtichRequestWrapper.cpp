@@ -1,5 +1,4 @@
 #include <entity/include/PathSwitchRequestWrapper.h>
-
 #include <rapidjson/document.h>
 
 #include <iostream>

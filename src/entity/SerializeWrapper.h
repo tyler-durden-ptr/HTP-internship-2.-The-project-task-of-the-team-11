@@ -2,8 +2,8 @@
 
 #include <rapidjson/document.h>
 
-#include <stdexcept>
 #include <format>
+#include <stdexcept>
 
 struct SerializeWrapper {
   virtual void serialize(rapidjson::Document&) const = 0;

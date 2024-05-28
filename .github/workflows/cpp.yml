@@ -38,11 +38,9 @@ jobs:
       fail-fast: false
       matrix:
         build_type: [Debug, SanitizedDebug]
-        compiler: [ 'gcc:13', 'clang:17' ]
+        compiler: [ gcc-13, clang-17 ]
 
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/cpp-kt/${{ matrix.compiler }}
 
     defaults:
       run:
@@ -54,13 +52,37 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build main
-        run: ci-scripts/build.sh ${{ matrix.build_type }}
+      - name: Set up Vcpkg
+        uses: microsoft/setup-vcpkg@v1
+        with:
+          vcpkg-root: '/home/vcpkg'
 
-      - name: Test main
+      - name: Install GCC 13
+        if: matrix.compiler == 'gcc-13'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
+
+      - name: Install Clang 17
+        if: matrix.compiler == 'clang-17'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-17
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-17 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-17 100
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=/home/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build project
+        run: cmake --build build --target tests -- -j 4
+
+      - name: Run tests
         run: |
           if [[ ${{ matrix.build_type }} == "SanitizedDebug" ]]; then
-            ASAN_OPTIONS=alloc_dealloc_mismatch=0 ci-scripts/test.sh ${{ matrix.build_type }}
+            ASAN_OPTIONS=alloc_dealloc_mismatch=0 ./build/tests
           else
-            ci-scripts/test.sh ${{ matrix.build_type }}
+            ./build/tests
           fi

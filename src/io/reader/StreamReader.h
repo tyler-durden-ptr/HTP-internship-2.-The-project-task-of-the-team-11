@@ -30,7 +30,8 @@ struct StreamReader {
     }
     jsonBody.append(buf, 0, stream.gcount());
 
-    rapidjson::Document document;
+    info->inputDoc = rapidjson::Document();
+    auto& document = info->inputDoc;
     document.Parse(jsonBody.c_str());
     for (auto&& arrayElem : document.GetArray()) {
       outputQueue->push(std::move(arrayElem));

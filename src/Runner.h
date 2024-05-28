@@ -15,7 +15,7 @@
 
 class Runner {
   static std::function<OutputMessage(InputMessage)> getTask() {
-    return [](const rapidjson::Value& value) {
+    return [](rapidjson::Value value) {
       std::unique_ptr<SerializeWrapper> wrapper = messageToWrapper(value);
       wrapper->deserialize(value);
       rapidjson::Document result;

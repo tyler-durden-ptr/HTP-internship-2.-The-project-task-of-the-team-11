@@ -78,8 +78,9 @@ jobs:
 
       - name: Run tests
         run: |
+          cd build/tests
           if [[ ${{ matrix.build_type }} == "SanitizedDebug" ]]; then
-            ASAN_OPTIONS=alloc_dealloc_mismatch=0 ./build/tests/tests
+            ASAN_OPTIONS=alloc_dealloc_mismatch=0 ./tests
           else
-            ./build/tests/tests
+            ./tests
           fi

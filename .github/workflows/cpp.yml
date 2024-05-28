@@ -53,25 +53,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install GCC 13
-        if: matrix.compiler == 'gcc-13'
-        run: |
-          sudo add-apt-repository ppa:netext/paczki
-          sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
+      #      - name: Install GCC 13
+      #        if: matrix.compiler == 'gcc-13'
+      #        run: |
+      #          sudo add-apt-repository ppa:netext/paczki
+      #          sudo apt-get update
+      #          sudo apt-get install -y gcc-13 g++-13
+      #          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+      #          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
 
       - name: Set up Vcpkg
         run: |
-          git clone https://github.com/microsoft/vcpkg.git /home/vcpkg
-          /home/vcpkg/bootstrap-vcpkg.sh
+          git clone https://github.com/microsoft/vcpkg.git ${{ github.workspace }}/vcpkg
+          ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh
 
       - name: Configure CMake
         run: |
-          /home/vcpkg/vcpkg install gtest
-          /home/vcpkg/vcpkg install rapidjson
-          cmake -B build -DCMAKE_TOOLCHAIN_FILE=/home/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          ${{ github.workspace }}/vcpkg/vcpkg install gtest
+          ${{ github.workspace }}/vcpkg/vcpkg install rapidjson
+          cmake -B build -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Build project
         run: cmake --build build --target tests -- -j 2

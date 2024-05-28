@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(RapidJSON CONFIG REQUIRED)
 
-file(GLOB ENTITY_SRC entity/*.cpp)
+file(GLOB ENTITY_SRC entity/impl/*.cpp)
 file(GLOB IO_SRC io/*.cpp)
 file(GLOB UTILITY_SRC utility/*.cpp)
 file(GLOB ITTI_SRC ../itti_structs/asn1c_build/*.cpp)

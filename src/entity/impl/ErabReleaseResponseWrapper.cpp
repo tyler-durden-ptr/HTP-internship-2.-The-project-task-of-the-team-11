@@ -1,4 +1,4 @@
-#include "ErabReleaseResponseWrapper.h"
+#include <entity/include/ErabReleaseResponseWrapper.h>
 
 #include <rapidjson/document.h>
 
@@ -35,15 +35,6 @@ void ErabReleaseResponseWrapper::serialize(rapidjson::Document& config) const {
 
   config.SetObject();
   config.AddMember("ErabReleaseResponse", val, allocator);
-}
-
-static const rapidjson::Value& getChecked(const rapidjson::Value& value, std::string_view name) {
-  auto it = value.FindMember(name.data());
-  if (it != value.MemberEnd()) {
-    return it->value;
-  } else {
-    throw std::invalid_argument(std::format("rapidjson::Value don't have {} field\n", name.data()));
-  }
 }
 
 void ErabReleaseResponseWrapper::deserialize(const rapidjson::Value& config) {

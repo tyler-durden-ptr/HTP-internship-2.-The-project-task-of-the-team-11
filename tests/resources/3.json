@@ -1,0 +1,151 @@
+[
+  {
+    "PathSwitchRequest": {
+      "cp_ue_id": 1,
+      "src_mme_ue_s1ap_id": 2,
+      "erab_switch_list": [
+        {
+          "e_rab_id": 3,
+          "sgw_addr": {
+            "length": 4,
+            "buffer": [
+              5,
+              6,
+              7,
+              8
+            ]
+          },
+          "sgw_teid": 9
+        },
+        {
+          "e_rab_id": 10,
+          "sgw_addr": {
+            "length": 11,
+            "buffer": [
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22
+            ]
+          },
+          "sgw_teid": 23
+        },
+        {
+          "e_rab_id": 24,
+          "sgw_addr": {
+            "length": 0,
+            "buffer": []
+          },
+          "sgw_teid": 1
+        }
+      ],
+      "security_capabilities": {
+        "encryption_algorithms": 2,
+        "integrity_algorithms": 3
+      }
+    }
+  },
+  {
+    "PathSwitchRequest": {
+      "cp_ue_id": 24,
+      "src_mme_ue_s1ap_id": 23,
+      "erab_switch_list": [
+        {
+          "e_rab_id": 123,
+          "sgw_addr": {
+            "length": 2,
+            "buffer": [
+              228,
+              229
+            ]
+          },
+          "sgw_teid": 157
+        },
+        {
+          "e_rab_id": 45,
+          "sgw_addr": {
+            "length": 6,
+            "buffer": [
+              228,
+              229,
+              123,
+              123,
+              234,
+              34
+            ]
+          },
+          "sgw_teid": 157
+        },
+        {
+          "e_rab_id": 45,
+          "sgw_addr": {
+            "length": 1,
+            "buffer": [
+              229
+            ]
+          },
+          "sgw_teid": 157
+        }
+      ],
+      "security_capabilities": {
+        "encryption_algorithms": 455,
+        "integrity_algorithms": 324
+      }
+    }
+  },
+  {
+    "PathSwitchRequest": {
+      "cp_ue_id": 254,
+      "src_mme_ue_s1ap_id": 253,
+      "erab_switch_list": [
+        {
+          "e_rab_id": 252,
+          "sgw_addr": {
+            "length": 2,
+            "buffer": [
+              251,
+              250
+            ]
+          },
+          "sgw_teid": 249
+        },
+        {
+          "e_rab_id": 248,
+          "sgw_addr": {
+            "length": 3,
+            "buffer": [
+              247,
+              246,
+              245
+            ]
+          },
+          "sgw_teid": 244
+        },
+        {
+          "e_rab_id": 243,
+          "sgw_addr": {
+            "length": 4,
+            "buffer": [
+              242,
+              241,
+              240,
+              239
+            ]
+          },
+          "sgw_teid": 238
+        }
+      ],
+      "security_capabilities": {
+        "encryption_algorithms": 237,
+        "integrity_algorithms": 236
+      }
+    }
+  }
+]

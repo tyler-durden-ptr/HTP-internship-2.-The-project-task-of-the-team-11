@@ -1,9 +1,9 @@
 #pragma once
 
-#include "entity/ErabReleaseResponseWrapper.h"
-
 #include <entity/SerializeWrapper.h>
-#include <entity/UeBlindRequestWrapper.h>
+#include <entity/include/ErabReleaseResponseWrapper.h>
+#include <entity/include/PathSwitchRequestWrapper.h>
+#include <entity/include/UeBlindRequestWrapper.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -29,7 +29,7 @@ inline std::unique_ptr<SerializeWrapper> messageToWrapper(const InputMessage& me
     } else if (name == "HandoverRequestAck") {
       // TODO
     } else if (name == "PathSwitchRequest") {
-      // TODO
+      return std::make_unique<PathSwitchRequestWrapper>();
     } else if (name == "UeCapabilityInfoIndication") {
       // TODO
     } else {

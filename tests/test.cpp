@@ -1,6 +1,7 @@
 #include <Runner.h>
-#include <entity/ErabReleaseResponseWrapper.h>
-#include <entity/UeBlindRequestWrapper.h>
+#include <entity/include/ErabReleaseResponseWrapper.h>
+#include <entity/include/UeBlindRequestWrapper.h>
+#include <entity/include/PathSwitchRequestWrapper.h>
 #include <gtest/gtest.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
@@ -20,6 +21,8 @@ concept serializableConcept = requires(T t, rapidjson::Document& config, const r
 };
 
 static_assert(serializableConcept<UeBlindRequestWrapper>);
+static_assert(serializableConcept<PathSwitchRequestWrapper>);
+static_assert(serializableConcept<ErabReleaseResponseWrapper>);
 
 static std::string getDefaultRepresentation(const std::string& formatted) {
   rapidjson::Document doc;
@@ -70,7 +73,6 @@ TEST(UeBlindRequest, ExampleDeserialization) {
 }
 
 TEST(ErabReleaseResponse, SerializeAndDeserialize) {
-  // Создание объекта ErabReleaseResponse
   ErabReleaseResponseWrapper response;
   response.cp_ue_id = 1234;
   response.erab_release_id_list = {1, 2, 3};
@@ -79,21 +81,16 @@ TEST(ErabReleaseResponse, SerializeAndDeserialize) {
   response.erab_failed_list.emplace_back(1, RrcCause::CAUSE_RADIO_NETWORK, 10);
   response.erab_failed_list.emplace_back(2, RrcCause::CAUSE_TRANSPORT, 20);
 
-  // Сериализация объекта
   rapidjson::Document config;
   response.serialize(config);
-
-  // Преобразование в строку для сравнения
   rapidjson::StringBuffer buffer;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   config.Accept(writer);
   std::string serializedResponse = buffer.GetString();
 
-  // Десериализация объекта
   ErabReleaseResponseWrapper deserializedResponse;
   deserializedResponse.deserialize(config);
 
-  // Проверка результата
   EXPECT_EQ(response.cp_ue_id, deserializedResponse.cp_ue_id);
   EXPECT_EQ(response.erab_release_id_list, deserializedResponse.erab_release_id_list);
   EXPECT_EQ(response.erab_failed_list.size(), deserializedResponse.erab_failed_list.size());
@@ -103,6 +100,60 @@ TEST(ErabReleaseResponse, SerializeAndDeserialize) {
     EXPECT_EQ(response.erab_failed_list[i].cause, deserializedResponse.erab_failed_list[i].cause);
     EXPECT_EQ(response.erab_failed_list[i].cause_value, deserializedResponse.erab_failed_list[i].cause_value);
   }
+}
+
+TEST(PathSwitchRequest, ExampleSerialization) {
+  PathSwitchRequestWrapper wrapper;
+  wrapper.cp_ue_id = 32;
+  wrapper.src_mme_ue_s1ap_id = 45;
+  vran::cplane::common::ERadioAccessBearerSwitchParameter er;
+  er.e_rab_id = 22;
+  er.sgw_addr.length = 2;
+  int values[] = {1, 2};
+  std::copy(std::begin(values), std::end(values), er.sgw_addr.buffer);
+  er.sgw_teid = 41;
+  wrapper.erab_switch_list = {er};
+  wrapper.security_capabilities.encryption_algorithms = 77;
+  wrapper.security_capabilities.integrity_algorithms = 88;
+
+  rapidjson::Document d;
+  wrapper.serialize(d);
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  d.Accept(writer);
+  ASSERT_EQ(
+      R"({"PathSwitchRequest":{"cp_ue_id":32,"src_mme_ue_s1ap_id":45,"erab_switch_list":[{"e_rab_id":22,"sgw_addr":{"length":2,"buffer":[1,2]},"sgw_teid":41}],"security_capabilities":{"encryption_algorithms":77,"integrity_algorithms":88}}})",
+      std::string(buffer.GetString(), buffer.GetLength()));
+}
+
+TEST(PathSwitchRequest, ExampleDeserialization) {
+  std::string_view input =
+      R"({"PathSwitchRequest":{"cp_ue_id":32,"src_mme_ue_s1ap_id":45,"erab_switch_list":[{"e_rab_id":22,"sgw_addr":{"length":2,"buffer":[1,2]},"sgw_teid":41}],"security_capabilities":{"encryption_algorithms":77,"integrity_algorithms":88}}})";
+  rapidjson::Document doc;
+  doc.Parse(input.data());
+  PathSwitchRequestWrapper result;
+  result.deserialize(doc);
+  ASSERT_EQ(32, result.cp_ue_id);
+  ASSERT_EQ(45, result.src_mme_ue_s1ap_id);
+  vran::cplane::common::ERadioAccessBearerSwitchParameter er;
+  er.e_rab_id = 22;
+  er.sgw_addr.length = 2;
+  int values[] = {1, 2};
+  std::copy(std::begin(values), std::end(values), er.sgw_addr.buffer);
+  er.sgw_teid = 41;
+  std::vector<vran::cplane::common::ERadioAccessBearerSwitchParameter> ers = {er};
+
+  for (size_t i = 0; i < ers.size(); ++i) {
+    ASSERT_EQ(ers[i].e_rab_id, result.erab_switch_list[i].e_rab_id);
+    for (size_t j = 0; j < ers[i].sgw_addr.length; ++j) {
+      ASSERT_EQ(ers[i].sgw_addr.buffer[j], result.erab_switch_list[i].sgw_addr.buffer[j]);
+    }
+    ASSERT_EQ(ers[i].sgw_addr.length, result.erab_switch_list[i].sgw_addr.length);
+    ASSERT_EQ(ers[i].sgw_teid, result.erab_switch_list[i].sgw_teid);
+  }
+  ASSERT_EQ(77, result.security_capabilities.encryption_algorithms);
+  ASSERT_EQ(88, result.security_capabilities.integrity_algorithms);
 }
 
 TEST(UeBlindRequest, FileWithSeveralItti2) {

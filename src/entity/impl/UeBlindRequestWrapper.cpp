@@ -2,7 +2,7 @@
 // Created by michael_b on 5/19/2024.
 //
 
-#include "UeBlindRequestWrapper.h"
+#include <entity/include/UeBlindRequestWrapper.h>
 
 #include <rapidjson/document.h>
 
@@ -1756,15 +1756,6 @@ static T* allocate(deleters_t& deleters) {
   T* t = new T();
   deleters.push_back([=]() { delete t; });
   return t;
-}
-
-static const rapidjson::Value& getChecked(const rapidjson::Value& value, std::string_view name) {
-  auto it = value.FindMember(name.data());
-  if (it != value.MemberEnd()) {
-    return it->value;
-  } else {
-    throw std::invalid_argument(std::format("rapidjson::Value don't have {} field\n", name.data()));
-  }
 }
 
 static void deserialize(MobilityStateParameters& result, const rapidjson::Value& value, deleters_t&) {

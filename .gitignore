@@ -10,6 +10,7 @@ CMakeFiles/
 cmake-build*
 cmake_install.cmake
 Makefile
+build
 
 # OS
 .DS_Store

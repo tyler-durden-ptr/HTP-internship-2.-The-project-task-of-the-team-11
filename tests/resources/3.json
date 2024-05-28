@@ -1,0 +1,23 @@
+{
+  "PathSwitchRequest": {
+    "cp_ue_id": 32,
+    "src_mme_ue_s1ap_id": 45,
+    "erab_switch_list": [
+      {
+        "e_rab_id": 22,
+        "sgw_addr": {
+          "length": 2,
+          "buffer": [
+            1,
+            2
+          ]
+        },
+        "sgw_teid": 41
+      }
+    ],
+    "security_capabilities": {
+      "encryption_algorithms": 77,
+      "integrity_algorithms": 88
+    }
+  }
+}

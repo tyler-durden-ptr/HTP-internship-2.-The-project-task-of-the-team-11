@@ -1,0 +1,59 @@
+name: C++ CI
+
+on:
+  pull_request
+
+jobs:
+  formatting-check:
+    name: Formatting check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check line breaks
+        run: |
+          sudo apt-get install -y dos2unix
+          pushd $GITHUB_WORKSPACE
+          ci-scripts/check-lines.sh
+          popd
+      - name: Run clang-format style check
+        # TODO format using clang container
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          clang-format-version: '17'
+          check-path: '.'
+
+  test:
+    needs: formatting-check
+    name: Tests in ${{ matrix.build_type }} with ${{ matrix.compiler }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, SanitizedDebug]
+        compiler: [ 'gcc:13', 'clang:17' ]
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/cpp-kt/${{ matrix.compiler }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build main
+        run: ci-scripts/build.sh ${{ matrix.build_type }}
+
+      - name: Test main
+        run: |
+          if [[ ${{ matrix.build_type }} == "SanitizedDebug" ]]; then
+            ASAN_OPTIONS=alloc_dealloc_mismatch=0 ci-scripts/test.sh ${{ matrix.build_type }}
+          else
+            ci-scripts/test.sh ${{ matrix.build_type }}
+          fi

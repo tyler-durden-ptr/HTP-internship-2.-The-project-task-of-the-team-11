@@ -10,15 +10,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install dos2unix
+        run: sudo apt-get install -y dos2unix
+
+      - name: Set execute permissions for check-lines.sh
+        run: chmod +x ci-scripts/check-lines.sh
+
       - name: Check line breaks
         run: |
-          chown root:root .
-          apt-get install -y dos2unix
           pushd $GITHUB_WORKSPACE
-          bash ci-scripts/check-lines.sh
+          ci-scripts/check-lines.sh
           popd
+
       - name: Run clang-format style check
-        # TODO format using clang container
         uses: jidicula/clang-format-action@v4.11.0
         with:
           clang-format-version: '17'
@@ -53,7 +58,6 @@ jobs:
 
       - name: Test main
         run: |
-          chown root:root .
           if [[ ${{ matrix.build_type }} == "SanitizedDebug" ]]; then
             ASAN_OPTIONS=alloc_dealloc_mismatch=0 ci-scripts/test.sh ${{ matrix.build_type }}
           else

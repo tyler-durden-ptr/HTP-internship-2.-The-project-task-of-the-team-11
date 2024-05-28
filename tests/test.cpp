@@ -1,4 +1,5 @@
 #include <Runner.h>
+#include <entity/ErabReleaseResponseWrapper.h>
 #include <entity/UeBlindRequestWrapper.h>
 #include <gtest/gtest.h>
 #include <rapidjson/document.h>
@@ -29,7 +30,7 @@ static std::string getDefaultRepresentation(const std::string& formatted) {
   return buffer.GetString();
 }
 
-TEST(UeBlindRequest, example_serialize) {
+TEST(UeBlindRequest, ExampleSerialization) {
   UeBlindRequestWrapper wrapper;
   wrapper.target_cell_id = 24;
   auto measConfig = std::make_unique<MeasConfig>();
@@ -54,7 +55,7 @@ TEST(UeBlindRequest, example_serialize) {
       std::string(buffer.GetString(), buffer.GetLength()));
 }
 
-TEST(UeBlindRequest, example_deserialize) {
+TEST(UeBlindRequest, ExampleDeserialization) {
   std::string_view input =
       R"({"UeBlindRequest":{"target_cell_id":24,"measConfig":{"speedStatePars":{"release":100},"measScaleFactor_r12":{"release":101}}}})";
   rapidjson::Document doc;
@@ -68,7 +69,43 @@ TEST(UeBlindRequest, example_deserialize) {
   ASSERT_EQ(101, result.measConfig->measScaleFactor_r12->choice.release);
 }
 
-TEST(UeBlindRequest, file_with_several_itti_2) {
+TEST(ErabReleaseResponse, SerializeAndDeserialize) {
+  // Создание объекта ErabReleaseResponse
+  ErabReleaseResponseWrapper response;
+  response.cp_ue_id = 1234;
+  response.erab_release_id_list = {1, 2, 3};
+
+  using vran::cplane::common::RrcCause;
+  response.erab_failed_list.emplace_back(1, RrcCause::CAUSE_RADIO_NETWORK, 10);
+  response.erab_failed_list.emplace_back(2, RrcCause::CAUSE_TRANSPORT, 20);
+
+  // Сериализация объекта
+  rapidjson::Document config;
+  response.serialize(config);
+
+  // Преобразование в строку для сравнения
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  config.Accept(writer);
+  std::string serializedResponse = buffer.GetString();
+
+  // Десериализация объекта
+  ErabReleaseResponseWrapper deserializedResponse;
+  deserializedResponse.deserialize(config);
+
+  // Проверка результата
+  EXPECT_EQ(response.cp_ue_id, deserializedResponse.cp_ue_id);
+  EXPECT_EQ(response.erab_release_id_list, deserializedResponse.erab_release_id_list);
+  EXPECT_EQ(response.erab_failed_list.size(), deserializedResponse.erab_failed_list.size());
+
+  for (size_t i = 0; i < response.erab_failed_list.size(); i++) {
+    EXPECT_EQ(response.erab_failed_list[i].e_rab_id, deserializedResponse.erab_failed_list[i].e_rab_id);
+    EXPECT_EQ(response.erab_failed_list[i].cause, deserializedResponse.erab_failed_list[i].cause);
+    EXPECT_EQ(response.erab_failed_list[i].cause_value, deserializedResponse.erab_failed_list[i].cause_value);
+  }
+}
+
+TEST(UeBlindRequest, FileWithSeveralItti2) {
   std::ifstream inputFile("resources/2.json");
   std::string inputData;
   if (inputFile) {
@@ -84,7 +121,7 @@ TEST(UeBlindRequest, file_with_several_itti_2) {
   ASSERT_EQ(getDefaultRepresentation(inputData), getDefaultRepresentation(outputSs.str()));
 }
 
-TEST(InvalidITTI, writer_dont_wait_invalid_messages) {
+TEST(InvalidITTI, WriterDontWaitInvalidMessages) {
   std::ifstream inputFile("resources/invalid1.json");
   std::string inputData;
   if (inputFile) {
@@ -115,23 +152,4 @@ TEST(InvalidITTI, writer_dont_wait_invalid_messages) {
   }
 ])"),
             getDefaultRepresentation(outputSs.str()));
-}
-
-TEST(rapidjsonLib, example) {
-  // 1. Parse a JSON string into DOM.
-  std::string json = R"({"project":"rapidjson","stars":10})";
-  rapidjson::Document d;
-  d.Parse(json.c_str());
-
-  // 2. Modify it by DOM.
-  rapidjson::Value& s = d["stars"];
-  s.SetInt(s.GetInt() + 1);
-
-  // 3. Stringify the DOM
-  rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  d.Accept(writer);
-
-  // Output {"project":"rapidjson","stars":11}
-  ASSERT_NE(json, std::string{buffer.GetString()});
 }

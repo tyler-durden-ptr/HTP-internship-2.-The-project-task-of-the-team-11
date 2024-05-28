@@ -1,5 +1,7 @@
 #pragma once
 
+#include "entity/ErabReleaseResponseWrapper.h"
+
 #include <entity/SerializeWrapper.h>
 #include <entity/UeBlindRequestWrapper.h>
 #include <rapidjson/document.h>
@@ -22,9 +24,15 @@ inline std::unique_ptr<SerializeWrapper> messageToWrapper(const InputMessage& me
     std::string name(member.name.GetString());
     if (name == "UeBlindRequest") {
       return std::make_unique<UeBlindRequestWrapper>();
-    }
-    // TODO: other structs
-    else {
+    } else if (name == "ErabReleaseResponse") {
+      return std::make_unique<ErabReleaseResponseWrapper>();
+    } else if (name == "HandoverRequestAck") {
+      // TODO
+    } else if (name == "PathSwitchRequest") {
+      // TODO
+    } else if (name == "UeCapabilityInfoIndication") {
+      // TODO
+    } else {
       throw std::domain_error(
           std::format("messageToWrapper don't know ITTI struct with name {}", member.name.GetString()));
     }

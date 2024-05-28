@@ -10,7 +10,7 @@ struct SerializeWrapper {
 
   virtual void deserialize(const rapidjson::Value&) = 0;
 
-  virtual ~SerializeWrapper() {};
+  virtual ~SerializeWrapper(){};
 };
 
 inline const rapidjson::Value& getChecked(const rapidjson::Value& value, std::string_view name) {

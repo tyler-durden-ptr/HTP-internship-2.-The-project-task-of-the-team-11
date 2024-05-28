@@ -12,9 +12,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Check line breaks
         run: |
-          sudo apt-get install -y dos2unix
+          chown root:root .
+          apt-get install -y dos2unix
           pushd $GITHUB_WORKSPACE
-          ci-scripts/check-lines.sh
+          bash ci-scripts/check-lines.sh
           popd
       - name: Run clang-format style check
         # TODO format using clang container
@@ -52,6 +53,7 @@ jobs:
 
       - name: Test main
         run: |
+          chown root:root .
           if [[ ${{ matrix.build_type }} == "SanitizedDebug" ]]; then
             ASAN_OPTIONS=alloc_dealloc_mismatch=0 ci-scripts/test.sh ${{ matrix.build_type }}
           else

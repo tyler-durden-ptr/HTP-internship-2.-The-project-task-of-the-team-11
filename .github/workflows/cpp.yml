@@ -28,6 +28,7 @@ jobs:
         with:
           clang-format-version: '17'
           check-path: 'src tests'
+          exclude-regex: '^itti_structs.*'
 
   test:
     needs: formatting-check

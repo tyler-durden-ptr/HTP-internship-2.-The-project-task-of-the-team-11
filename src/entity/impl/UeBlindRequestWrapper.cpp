@@ -3,7 +3,6 @@
 //
 
 #include <entity/include/UeBlindRequestWrapper.h>
-
 #include <rapidjson/document.h>
 
 #include <algorithm>
@@ -1813,7 +1812,8 @@ static void deserialize(MeasConfig& result, const rapidjson::Value& value, delet
 void UeBlindRequestWrapper::deserialize(const rapidjson::Value& config) {
   clear();
   try {
-    auto& result = getChecked(config, "UeBlindRequest");;
+    auto& result = getChecked(config, "UeBlindRequest");
+    ;
     using ::deserialize;
     this->target_cell_id = getChecked(result, "target_cell_id").GetUint();
     this->measConfig = allocate<MeasConfig>(deletersForAllocatedMemory);
@@ -1825,7 +1825,7 @@ void UeBlindRequestWrapper::deserialize(const rapidjson::Value& config) {
 }
 
 UeBlindRequestWrapper::~UeBlindRequestWrapper() {
-    clear();
+  clear();
 }
 
 void UeBlindRequestWrapper::clear() noexcept {

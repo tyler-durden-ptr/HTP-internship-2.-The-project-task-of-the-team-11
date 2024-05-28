@@ -2,15 +2,15 @@
 
 #include <rapidjson/document.h>
 
-#include <stdexcept>
 #include <format>
+#include <stdexcept>
 
 struct SerializeWrapper {
   virtual void serialize(rapidjson::Document&) const = 0;
 
   virtual void deserialize(const rapidjson::Value&) = 0;
 
-  virtual ~SerializeWrapper() {};
+  virtual ~SerializeWrapper(){};
 };
 
 inline const rapidjson::Value& getChecked(const rapidjson::Value& value, std::string_view name) {

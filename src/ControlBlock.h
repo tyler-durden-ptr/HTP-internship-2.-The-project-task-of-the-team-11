@@ -3,8 +3,8 @@
 #include <rapidjson/document.h>
 
 #include <atomic>
-#include <memory>
 #include <cstdint>
+#include <memory>
 
 struct ControlBlock {
   std::atomic<size_t> numberOfReadMessages{0};

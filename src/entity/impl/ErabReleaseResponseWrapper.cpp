@@ -1,5 +1,4 @@
 #include <entity/include/ErabReleaseResponseWrapper.h>
-
 #include <rapidjson/document.h>
 
 #include <format>

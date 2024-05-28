@@ -1,7 +1,7 @@
 #pragma once
 
-#include <io/InputMessage.h>
 #include <ControlBlock.h>
+#include <io/InputMessage.h>
 #include <io/reader/StreamReader.h>
 #include <utility/ConcurrentQueue.h>
 

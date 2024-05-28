@@ -46,7 +46,9 @@ private:
     std::lock_guard g(inputQMutex);
     std::optional<InputType> message = inputQ->pop(1s);
     if (message.has_value()) {
-      return {std::pair{inputIdx++, std::move(message.value())}};
+      return {
+          std::pair{inputIdx++, std::move(message.value())}
+      };
     }
     return std::nullopt;
   }

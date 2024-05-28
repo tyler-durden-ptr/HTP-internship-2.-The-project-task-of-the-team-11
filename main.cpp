@@ -6,10 +6,11 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-      std::cout << std::format("Incorrect number of arguments ({}), help: app <input_file> <output_file>", argc - 1) << std::endl;
-      return 1;
-    }
-    Runner::runWithFiles(argv[1], argv[2], 2);
-    return 0;
+  if (argc != 3) {
+    std::cout << std::format("Incorrect number of arguments ({}), help: app <input_file> <output_file>", argc - 1)
+              << std::endl;
+    return 1;
+  }
+  Runner::runWithFiles(argv[1], argv[2], 2);
+  return 0;
 }

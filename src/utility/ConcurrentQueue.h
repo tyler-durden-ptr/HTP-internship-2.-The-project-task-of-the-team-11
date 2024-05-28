@@ -1,11 +1,11 @@
 #pragma once
 
+#include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
-#include <utility>
 #include <optional>
-#include <chrono>
+#include <utility>
 
 template <typename T>
 class ConcurrentQueue {
@@ -43,9 +43,7 @@ public:
 
   T pop() {
     std::unique_lock g(mutex_);
-    cv_.wait(g, [this] {
-      return !queue_.empty();
-    });
+    cv_.wait(g, [this] { return !queue_.empty(); });
     T result = std::move(queue_.front());
     queue_.pop_front();
     return result;
@@ -54,9 +52,7 @@ public:
   template <typename Rep, typename Period>
   std::optional<T> pop(std::chrono::duration<Rep, Period> duration) {
     std::unique_lock g(mutex_);
-    cv_.wait_for(g, duration, [this] {
-      return !queue_.empty();
-    });
+    cv_.wait_for(g, duration, [this] { return !queue_.empty(); });
     if (!queue_.empty()) {
       T result = std::move(queue_.front());
       queue_.pop_front();
